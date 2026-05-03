@@ -457,6 +457,13 @@
     document.body.insertAdjacentHTML('beforeend', html);
     const modal = new bootstrap.Modal(document.getElementById('passwordModal'));
     modal.show();
+    // Clear form fields after modal is shown
+    setTimeout(() => {
+      document.getElementById('appName').value = '';
+      document.getElementById('pwdUsername').value = '';
+      document.getElementById('pwdPassword').value = '';
+      document.getElementById('pwdExpiry').value = '';
+    }, 100);
   }
 
   window.savePassword = async () => {
@@ -523,6 +530,12 @@
     document.body.insertAdjacentHTML('beforeend', html);
     const modal = new bootstrap.Modal(document.getElementById('reminderModal'));
     modal.show();
+    // Clear form fields after modal is shown
+    setTimeout(() => {
+      document.getElementById('remTitle').value = '';
+      document.getElementById('remDate').value = '';
+      document.getElementById('remDesc').value = '';
+    }, 100);
   }
 
   window.saveReminder = async () => {
@@ -581,6 +594,11 @@
     document.body.insertAdjacentHTML('beforeend', html);
     const modal = new bootstrap.Modal(document.getElementById('workNoteModal'));
     modal.show();
+    // Clear form fields after modal is shown
+    setTimeout(() => {
+      document.getElementById('noteTitle').value = '';
+      document.getElementById('noteContent').value = '';
+    }, 100);
   }
 
   window.saveWorkNote = async () => {
