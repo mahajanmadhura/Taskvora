@@ -14,6 +14,19 @@ function toObjectId(id) {
     }
 }
 
+// Function to clear all data
+async function clearAllData() {
+    try {
+        await Password.deleteMany({});
+        await Reminder.deleteMany({});
+        await WorkNote.deleteMany({});
+        await UploadedFile.deleteMany({});
+        console.log('✅ All data cleared successfully');
+    } catch (error) {
+        console.error('❌ Error clearing data:', error);
+    }
+}
+
 // MongoDB Collections/Schemas
 const userSchema = new mongoose.Schema({
     employee_id: { type: String, required: true, unique: true },
@@ -217,8 +230,7 @@ async connect() {
     }
 
     async getPasswords(userId) {
-        // Temporarily removed user_id filter for testing
-        const passwords = await Password.find({})
+        const passwords = await Password.find({ user_id: toObjectId(userId) })
             .sort({ expiry_date: 1 })
             .lean();
 
@@ -270,8 +282,7 @@ async connect() {
     }
 
     async getReminders(userId) {
-        // Temporarily removed user_id filter for testing
-        const reminders = await Reminder.find({})
+        const reminders = await Reminder.find({ user_id: toObjectId(userId) })
             .sort({ reminder_date: 1 })
             .lean();
 
@@ -319,8 +330,8 @@ async connect() {
         return workNote.save();
     }
 
-    async getWorkNotes() {
-        const notes = await WorkNote.find({})
+    async getWorkNotes(userId) {
+        const notes = await WorkNote.find({ user_id: toObjectId(userId) })
             .sort({ note_date: -1 })
             .lean();
         
@@ -347,8 +358,7 @@ async connect() {
     }
 
     async deleteWorkNote(noteId, userId) {
-        // Temporarily removed user_id filter for testing
-        return WorkNote.findOneAndDelete({ _id: toObjectId(noteId) });
+        return WorkNote.findOneAndDelete({ _id: toObjectId(noteId), user_id: userId });
     }
 
     // Generic database helper methods (for backward compatibility with controllers)
@@ -455,8 +465,7 @@ async connect() {
     }
 
     async getUploadedFiles(userId) {
-        // Temporarily removed user_id filter for testing
-        const files = await UploadedFile.find({})
+        const files = await UploadedFile.find({ user_id: toObjectId(userId) })
             .sort({ uploaded_at: -1 })
             .lean();
         return files.map(f => ({
@@ -466,8 +475,7 @@ async connect() {
     }
 
     async getUploadedFileById(fileId, userId) {
-        // Temporarily removed user_id filter for testing
-        const file = await UploadedFile.findOne({ _id: toObjectId(fileId) }).lean();
+        const file = await UploadedFile.findOne({ _id: toObjectId(fileId), user_id: toObjectId(userId) }).lean();
         if (file) {
             file.id = file._id.toString();
         }
@@ -475,8 +483,7 @@ async connect() {
     }
 
     async deleteUploadedFile(fileId, userId) {
-        // Temporarily removed user_id filter for testing
-        return UploadedFile.findOneAndDelete({ _id: toObjectId(fileId) });
+        return UploadedFile.findOneAndDelete({ _id: toObjectId(fileId), user_id: toObjectId(userId) });
     }
 
     close() {

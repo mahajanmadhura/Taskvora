@@ -44,9 +44,10 @@
 
   // Refresh Passwords - Full clean table like reminders
   async function refreshPasswords() {
-    const tbody = document.getElementById('recentPasswordsTable');
+    const list = document.getElementById('recentPasswordsList');
     const totalEl = document.getElementById('totalPasswords');
-    if (!tbody) return;
+    const noPasswordsMsg = document.getElementById('noPasswordsMessage');
+    if (!list) return;
 
     try {
       const res = await fetch(`${API_BASE}/passwords`, {
@@ -60,18 +61,35 @@
       totalEl.textContent = passwords.length;
 
       if (!passwords.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-4">No passwords added yet</td></tr>';
+        list.innerHTML = '';
+        if (noPasswordsMsg) noPasswordsMsg.style.display = 'block';
         return;
       }
+
+      if (noPasswordsMsg) noPasswordsMsg.style.display = 'none';
 
       const rows = passwords.map(pwd => {
         const exp = new Date(pwd.expiry_date).toLocaleDateString();
         const id = pwd._id || pwd.id;
+        const today = new Date();
+        const expiryDate = new Date(pwd.expiry_date);
+        const daysLeft = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+        let status = 'Active';
+        if (daysLeft < 0) status = 'Expired';
+        else if (daysLeft <= 7) status = 'Expiring Soon';
+        const maskedPassword = '•'.repeat(Math.min(pwd.password.length, 20));
+        
         return `
           <tr data-id="${id}">
             <td>${sanitize(pwd.username)}</td>
-            <td class="font-monospace small">${sanitize(pwd.password)}</td>
+            <td class="font-monospace small">
+              <span class="password-text" data-password="${sanitize(pwd.password)}">${maskedPassword}</span>
+              <button class="btn btn-sm btn-link p-0 ms-2 toggle-password" title="Show/Hide">
+                <i class="fas fa-eye"></i>
+              </button>
+            </td>
             <td>${exp}</td>
+            <td><span class="badge ${daysLeft < 0 ? 'bg-danger' : daysLeft <= 7 ? 'bg-warning' : 'bg-success'}">${status}</span></td>
             <td class="text-end">
               <button class="btn btn-sm btn-outline-danger delete-password" data-id="${id}" title="Delete">
                 <i class="fas fa-trash"></i>
@@ -80,9 +98,21 @@
           </tr>`;
       }).join('');
 
-      tbody.innerHTML = rows;
+      list.innerHTML = `
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Password</th>
+              <th>Expires</th>
+              <th>Status</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>`;
 
-      tbody.querySelectorAll('.delete-password').forEach(btn => {
+      list.querySelectorAll('.delete-password').forEach(btn => {
         btn.addEventListener('click', async () => {
           if (confirm('Delete this password?')) {
             const id = btn.dataset.id;
@@ -102,6 +132,23 @@
             } catch (e) {
               showNotification('Delete failed', 'danger');
             }
+          }
+        });
+      });
+
+      list.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const passwordSpan = btn.previousElementSibling;
+          const currentText = passwordSpan.textContent;
+          const actualPassword = passwordSpan.dataset.password;
+          const maskedPassword = '•'.repeat(Math.min(actualPassword.length, 20));
+          
+          if (currentText === maskedPassword) {
+            passwordSpan.textContent = actualPassword;
+            btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+          } else {
+            passwordSpan.textContent = maskedPassword;
+            btn.innerHTML = '<i class="fas fa-eye"></i>';
           }
         });
       });

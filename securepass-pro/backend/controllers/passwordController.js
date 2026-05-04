@@ -153,8 +153,7 @@ class PasswordController {
             const userId = req.user.id;
             const { id } = req.params;
 
-            // Temporarily removed user_id filter for testing
-            const result = await db.deleteOne('app_passwords', { _id: id });
+            const result = await db.deleteOne('app_passwords', { _id: id, user_id: userId });
 
             if (!result) {
                 return res.status(404).json({

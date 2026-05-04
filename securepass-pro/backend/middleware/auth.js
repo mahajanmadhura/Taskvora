@@ -2,12 +2,6 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 const authMiddleware = (req, res, next) => {
-    // Temporarily disabled for testing - remove this comment to enable auth
-    // Set a default user for testing with valid ObjectId
-    req.user = { id: '507f1f77bcf86cd799439011', email: 'test@test.com', role: 'admin' };
-    next();
-
-    /* Original auth check - commented out for testing
     let authHeader = req.headers.authorization;
     let token = null;
 
@@ -34,7 +28,6 @@ const authMiddleware = (req, res, next) => {
             message: 'Invalid or expired token'
         });
     }
-    */
 };
 
 const adminMiddleware = (req, res, next) => {
