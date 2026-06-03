@@ -47,12 +47,18 @@ app.get('/api/db-status', (req, res) => {
     });
 });
 
+// Root route - serve index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
+
 // Serve frontend
 const frontendPath = path.join(__dirname, '../frontend');
+console.log('Serving static files from:', frontendPath);
 app.use(express.static(frontendPath));
 
-// Handle SPA routing
-app.get('*', (req, res) => {
+// Handle SPA routing - exclude API routes
+app.get(/^(?!\/api).*/, (req, res) => {
     res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
